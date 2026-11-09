@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1e1408">
+<title>Apeiron · Переправа</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100dvh;overflow:hidden}
+body{
+  background:radial-gradient(ellipse at 20% 0%,rgba(120,80,30,.35),transparent 55%),
+             radial-gradient(ellipse at 80% 100%,rgba(120,80,30,.25),transparent 55%),
+             #1e1408;
+  color:#f5ead6;font-family:Georgia,serif;display:grid;
+  grid-template-rows:auto 1fr auto;height:100dvh
+}
+header{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));
+  border-bottom:1px solid rgba(201,162,39,.25)}
+.brand{color:#c9a227;letter-spacing:.12em;font-size:1.15em}
+.controls{display:flex;gap:8px}
+.controls button{min-width:44px;min-height:32px;padding:4px 10px;font-family:inherit;
+  font-size:.9em;background:transparent;color:#f5ead6;
+  border:1px solid rgba(201,162,39,.4);border-radius:4px;cursor:pointer}
+.controls button:active{background:rgba(201,162,39,.15)}
+#main{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px}
+#board{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+  gap:6px;aspect-ratio:1/1;max-width:440px;margin:12px auto;padding:6px}
+.cell{position:relative;background:linear-gradient(145deg,#f5ead6,#e8d9b8);
+  border:2px solid #8b6f47;border-radius:8px;color:#2a1e14;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:4px;font-size:clamp(.7em,2.8vw,.9em);text-align:center;min-height:0;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -2px 4px rgba(0,0,0,.08),
+             0 2px 4px rgba(0,0,0,.35);user-select:none}
+.cell.empty{background:transparent;border-style:dashed;opacity:.35;box-shadow:none}
+.cell .icon{font-size:clamp(1.6em,6vw,2.2em);line-height:1;margin-bottom:2px}
+.cell .name{font-weight:600}
+.cell .tag{position:absolute;top:4px;left:4px;font-size:.6em;
+  padding:1px 5px;border-radius:3px;font-weight:600}
+.tag.open{background:#4a6b3a;color:#fff}
+.tag.closed{background:#8b2f1a;color:#fff}
+.tag.fort{background:#c9a227;color:#2a1e14}
+.tag.mob{background:#5a7fb8;color:#fff}
+.cell .oc{position:absolute;bottom:3px;left:3px;right:3px;font-size:.75em;
+  color:#6b5235;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell.current{border-color:#8b2f1a;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),
+             0 0 0 3px rgba(139,47,26,.35),0 2px 6px rgba(0,0,0,.35)}
+.cell.reach{cursor:pointer;border-color:#c9a227}
+.cell.reach::after{content:'➤';position:absolute;top:3px;right:5px;
+  color:#c9a227;font-size:.85em;font-weight:bold}
+.cell.reach:active{transform:scale(.95)}
+#hero{margin:0 12px 12px;padding:10px 12px;
+  background:linear-gradient(145deg,#f5ead6,#e8d9b8);color:#2a1e14;
+  border:2px solid #8b6f47;border-radius:8px;max-width:440px;
+  margin-left:auto;margin-right:auto}
+#hero .row{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}
+#hero .name{font-weight:700;font-size:1.05em}
+#hero .loc{font-style:italic;color:#6b5235;font-size:.92em}
+#hero .inv{font-size:.88em;margin-top:4px;display:flex;flex-wrap:wrap;gap:4px}
+#hero .inv .lbl{color:#6b5235}
+#hero .inv .item{background:rgba(139,111,71,.18);padding:1px 7px;
+  border-radius:4px;border:1px solid rgba(139,111,71,.35)}
+#hero .sup{color:#8b2f1a;font-weight:600;margin-top:4px;font-size:.88em}
+#episode{margin:12px;padding:14px;
+  background:radial-gradient(ellipse at top,rgba(201,162,39,.12),transparent 70%),
+             linear-gradient(145deg,#3d2a1a,#2a1e14);
+  border:2px solid #c9a227;border-radius:10px;max-width:440px;
+  margin-left:auto;margin-right:auto}
+#episode h2{margin:0 0 8px;color:#c9a227;font-size:1.05em;text-align:center}
+#episode .budget{font-size:1.8em;color:#c9a227;text-align:center;margin:8px 0;font-weight:700}
+#episode .budget small{font-size:.4em}
+#episode .log{font-size:.85em;color:rgba(245,234,214,.75);max-height:100px;overflow-y:auto}
+#episode .log div{padding:2px 0}
+#actions{padding:10px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(30,20,8,.95),#1e1408);
+  border-top:1px solid rgba(201,162,39,.2);display:flex;flex-direction:column;
+  gap:6px;max-height:45dvh;overflow-y:auto}
+#actions button{min-height:46px;padding:10px 14px;font-family:inherit;font-size:.98em;
+  background:linear-gradient(180deg,#8b6f47,#6b5235);color:#f5ead6;
+  border:1px solid #4a3820;border-radius:6px;cursor:pointer;
+  box-shadow:0 2px 4px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.15);
+  text-align:left;display:flex;justify-content:space-between;align-items:center;gap:8px}
+#actions button:active{transform:translateY(1px)}
+#actions button .cost{font-size:.8em;opacity:.65;color:#c9a227}
+#actions .victory{text-align:center;padding:16px;font-size:1.2em;color:#c9a227;font-weight:700}
+#actions .hint{text-align:center;opacity:.5;padding:8px;font-size:.9em}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">⟡ <span id="brand">Апейрон</span></div>
+  <div class="controls">
+    <button id="lang">EN</button>
+    <button id="reset">↺</button>
+  </div>
+</header>
+<main id="main">
+  <section id="board"></section>
+  <section id="episode" hidden></section>
+  <aside id="hero"></aside>
+</main>
+<footer id="actions"></footer>
+<script>
+'use strict';
+
+const STR = {
+  ua:{brand:'Апейрон',hero:'Странник',inv:'При собі',empty:'порожньо',
+    vhod:'Підхід',pere:'Переправа',master:'Майстерня',lager:'Табір',
+    obhod:'Обхід',hranitel:'Вартовий',bereg:'Берег',
+    inspect:'Оглянути шлях',take:'Взяти матеріали',give:'Віддати матеріали',
+    tool:'Застосувати інструмент',ask:'Попросити перевізника',
+    fortify:'Укріпити',mobile:'Зберегти мобільність',turn:'Повернути поверхню',
+    enter:'Увійти в епізод',advance:'Просунутись',resolve:'Завершити',retreat:'Відступити',
+    path_open:'відкр.',path_closed:'закр.',fort:'укріп.',mob:'моб.',
+    prepared:'готово',support:'підтримка',episode:'Епізод: переправа',
+    budget:'Бюджет',victory:'🎉 Дійшли до берега!',to:'До:',
+    act:'Дія'},
+  en:{brand:'Apeiron',hero:'Wanderer',inv:'Carrying',empty:'empty',
+    vhod:'Approach',pere:'Crossing',master:'Workshop',lager:'Camp',
+    obhod:'Detour',hranitel:'Warden',bereg:'Far bank',
+    inspect:'Inspect the path',take:'Take materials',give:'Give materials',
+    tool:'Use the tool',ask:'Ask the carrier',
+    fortify:'Fortify',mobile:'Keep mobile',turn:'Turn the surface',
+    enter:'Enter episode',advance:'Advance',resolve:'Resolve',retreat:'Retreat',
+    path_open:'open',path_closed:'closed',fort:'fort.',mob:'mob.',
+    prepared:'ready',support:'support',episode:'Episode: crossing',
+    budget:'Budget',victory:'🎉 Reached the far bank!',to:'To:',
+    act:'Action'},
+};
+let LANG='ua';
+const t=k=>(STR[LANG][k]||k);
+const ICON={vhod:'🚪',pere:'⚓',master:'⚒',lager:'🐴',obhod:'🌲',hranitel:'🛡',bereg:'🏁'};
+const ITEM_ICON={tool:'🔧',materials:'📦'};
+const ENT_ICON={hero:'🧭',master:'⚒',carrier:'🐴',guardian:'🛡'};
+
+function port(id,from,to,state){return{id,from,to,state:state||'open'};}
+function character(id,location,target){return{
+  id,location,owner:null,kind:'character',abilities:[],inventory:[],
+  condition:'ok',goal:{id:target,description:target,target},
+  knowledge:[],pendingSupport:null};}
+
+function createWorld(){
+  const places={
+    vhod:{id:'vhod',position:[1,2],occupantIds:['hero'],
+      ports:{'vhod.pere':port('vhod.pere','vhod','pere')},
+      state:{kind:'generic'},resources:{}},
+    pere:{id:'pere',position:[1,1],occupantIds:[],
+      ports:{
+        'pere.n':port('pere.n','pere','master'),
+        'pere.w':port('pere.w','pere','lager'),
+        'pere.e':port('pere.e','pere','obhod'),
+        'pere.s':port('pere.s','pere','vhod'),
+        'pere.hran':port('pere.hran','pere','hranitel'),
+        'pere.bereg':port('pere.bereg','pere','bereg','closed'),
+      },state:{kind:'pereprava',path:'closed',choice:'none'},resources:{}},
+    master:{id:'master',position:[1,0],occupantIds:['master'],
+      ports:{'master.pere':port('master.pere','master','pere')},
+      state:{kind:'generic'},resources:{}},
+    lager:{id:'lager',position:[0,1],occupantIds:['carrier','materials'],
+      ports:{'lager.pere':port('lager.pere','lager','pere')},
+      state:{kind:'generic'},resources:{}},
+    obhod:{id:'obhod',position:[2,1],occupantIds:[],
+      ports:{
+        'obhod.pere':port('obhod.pere','obhod','pere'),
+        'obhod.bereg':port('obhod.bereg','obhod','bereg','closed'),
+      },state:{kind:'obhod',prepared:false},resources:{}},
+    hranitel:{id:'hranitel',position:[2,0],occupantIds:['guardian'],
+      ports:{'hranitel.pere':port('hranitel.pere','hranitel','pere')},
+      state:{kind:'generic'},resources:{}},
+    bereg:{id:'bereg',position:[0,0],occupantIds:[],
+      ports:{'bereg.pere':port('bereg.pere','bereg','pere','closed')},
+      state:{kind:'generic'},resources:{}},
+  };
+  const entities={
+    hero:{...character('hero','vhod','travel'),inventory:['tool']},
+    master:character('master','master','restore-path'),
+    carrier:character('carrier','lager','deliver-cargo'),
+    guardian:character('guardian','hranitel','keep-order'),
+    materials:{id:'materials',location:'lager',owner:'carrier',kind:'cargo',
+      abilities:[],inventory:[],condition:'ok'},
+    tool:{id:'tool',location:'vhod',owner:'hero',kind:'item',
+      abilities:['tool'],inventory:[],condition:'ok'},
+  };
+  return{places,entities,episodes:{},revision:0,clock:0,commandCounter:0,
+    appliedCommandIds:new Set()};
+}
+
+function withPlace(s,p){return{...s,places:{...s.places,[p.id]:p}};}
+function withEntity(s,e){return{...s,entities:{...s.entities,[e.id]:e}};}
+
+function applyChange(s,ch){
+  switch(ch.kind){
+    case 'set-port-state':{const p=s.places[ch.placeId],pt=p.ports[ch.portId];
+      return withPlace(s,{...p,ports:{...p.ports,[ch.portId]:{...pt,state:ch.state}}});}
+    case 'set-place-state':{const p=s.places[ch.placeId];
+      return withPlace(s,{...p,state:ch.state});}
+    case 'move-entity':{
+      const e=s.entities[ch.entityId];if(!e)return s;
+      const from=s.places[e.location],to=s.places[ch.to];
+      if(!from||!to)return s;
+      let ns=withPlace(s,{...from,occupantIds:from.occupantIds.filter(x=>x!==ch.entityId)});
+      ns=withPlace(ns,{...to,occupantIds:[...to.occupantIds,ch.entityId]});
+      return withEntity(ns,{...e,location:ch.to});}
+    case 'set-owner':{const e=s.entities[ch.entityId];
+      return e?withEntity(s,{...e,owner:ch.owner}):s;}
+    case 'consume-item':{const e=s.entities[ch.entityId];
+      return e?withEntity(s,{...e,condition:'consumed'}):s;}
+    case 'rewire-port':{const p=s.places[ch.placeId],pt=p.ports[ch.portId];
+      return withPlace(s,{...p,ports:{...p.ports,[ch.portId]:{...pt,to:ch.newTo}}});}
+    case 'add-fact':{const a=s.entities[ch.actorId];
+      if(!a||a.knowledge.includes(ch.fact))return s;
+      return withEntity(s,{...a,knowledge:[...a.knowledge,ch.fact]});}
+    case 'add-to-inv':{const a=s.entities[ch.actorId];
+      return withEntity(s,{...a,inventory:[...a.inventory,ch.itemId]});}
+    case 'remove-from-inv':{const a=s.entities[ch.actorId];
+      return withEntity(s,{...a,inventory:a.inventory.filter(x=>x!==ch.itemId)});}
+    case 'set-support':{const a=s.entities[ch.actorId];
+      return withEntity(s,{...a,pendingSupport:ch.support});}
+    case 'add-episode':case 'set-episode':
+      return{...s,episodes:{...s.episodes,[ch.episode.id]:ch.episode}};
+    default:return s;
+  }
+}
+
+function commit(prev,commandId,changes,clockCost){
+  let s=prev;for(const ch of changes)s=applyChange(s,ch);
+  return{...s,revision:prev.revision+1,clock:prev.clock+clockCost,
+    appliedCommandIds:new Set([...prev.appliedCommandIds,commandId])};
+}
+function fail(state,reason){return{kind:'rejected',state,reason};}
+function success(prev,cmd,changes,clockCost){
+  return{kind:'ok',state:commit(prev,cmd.commandId,changes,clockCost)};
+}
+
+const H={};
+
+H.move=(s,c)=>{
+  const hero=s.entities.hero,from=s.places[hero.location];
+  const pt=from.ports[c.portId];
+  if(!pt||pt.state!=='open')return fail(s,'port closed');
+  if(pt.from!==hero.location||pt.to!==c.toPlaceId)return fail(s,'bad port');
+  const changes=[{kind:'move-entity',entityId:'hero',to:c.toPlaceId}];
+  for(const itemId of hero.inventory){
+    const it=s.entities[itemId];
+    if(it&&it.location===hero.location)
+      changes.push({kind:'move-entity',entityId:itemId,to:c.toPlaceId});
+  }
+  return success(s,c,changes,1);
+};
+
+H['inspect-path']=(s,c)=>{
+  const hero=s.entities.hero;
+  if(hero.location!==c.placeId)return fail(s,'not here');
+  if(s.places[c.placeId].state.kind!=='pereprava')return fail(s,'not pereprava');
+  return success(s,c,[
+    {kind:'add-fact',actorId:'hero',fact:'pere.path.closed'},
+    {kind:'add-fact',actorId:'hero',fact:'master.can.restore'},
+    {kind:'add-fact',actorId:'hero',fact:'obhod.possible'},
+  ],0);
+};
+
+H['take-cargo']=(s,c)=>{
+  const hero=s.entities.hero,cargo=s.entities[c.cargoId];
+  if(!cargo||cargo.kind!=='cargo')return fail(s,'not cargo');
+  if(hero.location!==cargo.location)return fail(s,'not here');
+  if(cargo.owner==='hero')return fail(s,'already owned');
+  return success(s,c,[
+    {kind:'set-owner',entityId:c.cargoId,owner:'hero'},
+    {kind:'add-to-inv',actorId:'hero',itemId:c.cargoId},
+  ],1);
+};
+
+H['give-materials']=(s,c)=>{
+  const hero=s.entities.hero;
+  if(!hero.inventory.includes(c.materialsId))return fail(s,'not in inv');
+  if(hero.location!==s.entities[c.masterId].location)return fail(s,'not here');
+  return success(s,c,[
+    {kind:'remove-from-inv',actorId:'hero',itemId:c.materialsId},
+    {kind:'set-owner',entityId:c.materialsId,owner:c.masterId},
+    {kind:'set-place-state',placeId:'pere',state:{kind:'pereprava',path:'open',choice:'none'}},
+    {kind:'set-port-state',placeId:'pere',portId:'pere.bereg',state:'open'},
+    {kind:'set-port-state',placeId:'bereg',portId:'bereg.pere',state:'open'},
+  ],1);
+};
+
+H['use-tool']=(s,c)=>{
+  const hero=s.entities.hero;
+  if(!hero.inventory.includes(c.toolId))return fail(s,'not in inv');
+  if(hero.location!=='obhod')return fail(s,'not at obhod');
+  return success(s,c,[
+    {kind:'set-place-state',placeId:'obhod',state:{kind:'obhod',prepared:true}},
+    {kind:'set-port-state',placeId:'obhod',portId:'obhod.bereg',state:'open'},
+    {kind:'consume-item',entityId:c.toolId},
+    {kind:'remove-from-inv',actorId:'hero',itemId:c.toolId},
+  ],1);
+};
+
+H['ask-carrier']=(s,c)=>{
+  const hero=s.entities.hero;
+  if(hero.location!=='lager')return fail(s,'not here');
+  if(hero.pendingSupport)return fail(s,'support pending');
+  return success(s,c,[
+    {kind:'set-support',actorId:'hero',
+      support:{source:'carrier',kind:'one-shot',knownEffect:'reduces episode difficulty'}},
+  ],1);
+};
+
+H.fortify=(s,c)=>{
+  const hero=s.entities.hero,pere=s.places.pere;
+  if(hero.location!=='pere')return fail(s,'not here');
+  if(pere.state.choice!=='none')return fail(s,'choice made');
+  const ready=pere.state.path==='open'||s.places.obhod.state.prepared;
+  if(!ready)return fail(s,'path not ready');
+  return success(s,c,[
+    {kind:'set-place-state',placeId:'pere',state:{...pere.state,choice:'fortified'}},
+    {kind:'set-port-state',placeId:'obhod',portId:'obhod.bereg',state:'closed'},
+    {kind:'move-entity',entityId:'guardian',to:'pere'},
+  ],1);
+};
+
+H['keep-mobile']=(s,c)=>{
+  const hero=s.entities.hero,pere=s.places.pere;
+  if(hero.location!=='pere')return fail(s,'not here');
+  if(pere.state.choice!=='none')return fail(s,'choice made');
+  const ready=pere.state.path==='open'||s.places.obhod.state.prepared;
+  if(!ready)return fail(s,'path not ready');
+  return success(s,c,[
+    {kind:'set-place-state',placeId:'pere',state:{...pere.state,choice:'mobile'}},
+  ],1);
+};
+
+H.transform=(s,c)=>{
+  const pere=s.places.pere;
+  if(pere.state.choice==='none')return fail(s,'choice first');
+  const n=pere.ports['pere.n'],w=pere.ports['pere.w'],e=pere.ports['pere.e'];
+  return success(s,c,[
+    {kind:'rewire-port',placeId:'pere',portId:'pere.n',newTo:w.to},
+    {kind:'rewire-port',placeId:'pere',portId:'pere.w',newTo:e.to},
+    {kind:'rewire-port',placeId:'pere',portId:'pere.e',newTo:n.to},
+  ],1);
+};
+
+H['enter-episode']=(s,c)=>{
+  const hero=s.entities.hero;
+  if(hero.location!=='pere')return fail(s,'not here');
+  const epId='ep'+(s.revision+1);
+  const ep={
+    id:epId,placeId:'pere',mode:c.mode||'detailed',
+    entry:{fromPort:null,by:'hero',support:hero.pendingSupport},
+    support:hero.pendingSupport,
+    objective:{kind:'cross',allowedExits:[{placeId:'obhod',portId:'obhod.bereg'}]},
+    budget:5,status:'active',log:[],
+  };
+  return success(s,c,[
+    {kind:'add-episode',episode:ep},
+    {kind:'set-support',actorId:'hero',support:null},
+  ],0);
+};
+
+H['episode-action']=(s,c)=>{
+  const ep=s.episodes[c.episodeId];
+  if(!ep)return fail(s,'no ep');
+  if(ep.status!=='active')return fail(s,'ep done');
+  if(ep.budget<=0)return fail(s,'budget spent');
+  const newEp={...ep,budget:ep.budget-1,
+    log:[...ep.log,`${t('act')} ${5-ep.budget+1}/5`]};
+  return success(s,c,[{kind:'set-episode',episode:newEp}],0);
+};
+
+H['resolve-episode']=(s,c)=>{
+  const ep=s.episodes[c.episodeId];
+  if(!ep)return fail(s,'no ep');
+  if(ep.status!=='active')return fail(s,'ep done');
+  const hero=s.entities.hero;
+  if(hero.location!==ep.placeId)return fail(s,'not here');
+  const exit=c.exit;
+  const ok=ep.objective.allowedExits.some(
+    a=>a.placeId===exit.placeId&&a.portId===exit.portId);
+  if(!ok)return fail(s,'exit not allowed');
+  const ep_exit=s.places[exit.placeId].ports[exit.portId];
+  if(!ep_exit||ep_exit.state!=='open')return fail(s,'exit closed');
+  const heroPlace=s.places[hero.location];
+  const adjacent=Object.values(heroPlace.ports).some(
+    p=>p.state==='open'&&p.to===exit.placeId);
+  if(!adjacent)return fail(s,'exit not reachable');
+  return success(s,c,[
+    {kind:'set-episode',episode:{...ep,status:'resolved'}},
+    {kind:'move-entity',entityId:'hero',to:ep_exit.to},
+  ],0);
+};
+
+H['retreat-episode']=(s,c)=>{
+  const ep=s.episodes[c.episodeId];
+  if(!ep||ep.status!=='active')return fail(s,'no active ep');
+  return success(s,c,[{kind:'set-episode',episode:{...ep,status:'retreated'}}],0);
+};
+
+function apply(state,cmd){
+  if(state.appliedCommandIds.has(cmd.commandId))
+    return{kind:'ok',state};
+  if(cmd.expectedRevision!==state.revision)
+    return fail(state,'stale revision');
+  const h=H[cmd.kind];
+  if(!h)return fail(state,'unknown command');
+  return h(state,cmd);
+}
+
+let S=createWorld();
+let LOG=[];
+
+function doCmd(kind,params){
+  params=params||{};
+  const c={commandId:'c'+(++S.commandCounter),kind,
+    expectedRevision:S.revision,...params};
+  const out=apply(S,c);
+  if(out.kind==='ok'){S=out.state;addLog(describeCmd(kind,params),false);}
+  else{addLog('✗ '+out.reason,true);}
+  render();
+}
+
+function addLog(text,isErr){
+  LOG.push({text,isErr});
+  if(LOG.length>30)LOG.shift();
+}
+function describeCmd(kind,p){
+  if(kind==='move')return '→ '+t(p.toPlaceId);
+  const map={ 'inspect-path':'inspect','take-cargo':'take','give-materials':'give',
+    'use-tool':'tool','ask-carrier':'ask',fortify:'fortify','keep-mobile':'mobile',
+    transform:'turn','enter-episode':'enter','episode-action':'advance',
+    'resolve-episode':'resolve','retreat-episode':'retreat' };
+  return t(map[kind]||kind);
+}
+
+function computeLayout(){
+  const pere=S.places.pere;
+  const layout={pere:[1,1],bereg:[0,0]};
+  layout[pere.ports['pere.n'].to]=[1,0];
+  layout[pere.ports['pere.w'].to]=[0,1];
+  layout[pere.ports['pere.e'].to]=[2,1];
+  layout[pere.ports['pere.s'].to]=[1,2];
+  layout[pere.ports['pere.hran'].to]=[2,0];
+  return layout;
+}
+
+function render(){
+  renderBoard();
+  renderHero();
+  renderEpisode();
+  renderActions();
+}
+
+function renderBoard(){
+  const board=document.getElementById('board');
+  board.innerHTML='';
+  const hero=S.entities.hero;
+  const currentPlace=S.places[hero.location];
+  const reachable={};
+  for(const p of Object.values(currentPlace.ports)){
+    if(p.state==='open')reachable[p.to]=p;
+  }
+  const layout=computeLayout();
+  for(let y=0;y<3;y++){
+    for(let x=0;x<3;x++){
+      const placeId=Object.keys(layout).find(id=>
+        layout[id][0]===x&&layout[id][1]===y);
+      if(!placeId){
+        const empty=document.createElement('div');
+        empty.className='cell empty';
+        board.appendChild(empty);
+        continue;
+      }
+      const place=S.places[placeId];
+      const cell=document.createElement('div');
+      cell.className='cell';
+      if(placeId===hero.location)cell.classList.add('current');
+      else if(reachable[placeId]){
+        cell.classList.add('reach');
+        const pid=reachable[placeId].id;
+        cell.onclick=()=>doCmd('move',{toPlaceId:placeId,portId:pid});
+      }
+      const icon=document.createElement('div');
+      icon.className='icon';
+      icon.textContent=ICON[placeId]||'·';
+      cell.appendChild(icon);
+      const name=document.createElement('div');
+      name.className='name';
+      name.textContent=t(placeId);
+      cell.appendChild(name);
+      const tag=placeTag(placeId,place);
+      if(tag){
+        const tagEl=document.createElement('div');
+        tagEl.className='tag '+tag.cls;
+        tagEl.textContent=tag.text;
+        cell.appendChild(tagEl);
+      }
+      const others=place.occupantIds.filter(id=>id!=='hero');
+      if(others.length){
+        const oc=document.createElement('div');
+        oc.className='oc';
+        oc.textContent=others.map(id=>ENT_ICON[id]||ITEM_ICON[id]||'').join(' ');
+        cell.appendChild(oc);
+      }
+      board.appendChild(cell);
+    }
+  }
+}
+
+function placeTag(id,place){
+  if(id==='pere'){
+    const s=place.state;
+    if(s.choice==='fortified')return{cls:'fort',text:t('fort')};
+    if(s.choice==='mobile')return{cls:'mob',text:t('mob')};
+    if(s.path==='open')return{cls:'open',text:t('path_open')};
+    return{cls:'closed',text:t('path_closed')};
+  }
+  if(id==='obhod'&&place.state.kind==='obhod'&&place.state.prepared)
+    return{cls:'open',text:t('prepared')};
+  return null;
+}
+
+function renderHero(){
+  const hero=S.entities.hero;
+  const invItems=hero.inventory.map(id=>(ITEM_ICON[id]||'?')+' '+id).join(', ');
+  const support=hero.pendingSupport
+    ?`<div class="sup">📣 ${t('support')}: ${hero.pendingSupport.source}</div>`:'';
+  document.getElementById('hero').innerHTML=`
+    <div class="row"><span class="name">🧭 ${t('hero')}</span>
+      <span class="loc">${t(hero.location)}</span></div>
+    <div class="inv"><span class="lbl">${t('inv')}:</span>
+      ${invItems||'<em>'+t('empty')+'</em>'}</div>${support}`;
+}
+
+function renderEpisode(){
+  const ep=Object.values(S.episodes).find(e=>e.status==='active');
+  const section=document.getElementById('episode');
+  if(!ep){section.hidden=true;return;}
+  section.hidden=false;
+  const log=ep.log.map(l=>`<div>${l}</div>`).join('');
+  section.innerHTML=`<h2>${t('episode')}</h2>
+    <div class="budget">${ep.budget} <small>${t('budget')}</small></div>
+    <div class="log">${log||'<em>—</em>'}</div>`;
+}
+
+function addBtn(parent,label,cost,fn){
+  const btn=document.createElement('button');
+  btn.innerHTML=`<span>${label}</span>${cost?`<span class="cost">${cost}</span>`:''}`;
+  btn.onclick=fn;
+  parent.appendChild(btn);
+}
+
+function renderActions(){
+  const actions=document.getElementById('actions');
+  actions.innerHTML='';
+  const hero=S.entities.hero;
+
+  if(hero.location==='bereg'){
+    actions.innerHTML=`<div class="victory">${t('victory')}</div>`;
+    return;
+  }
+
+  const ep=Object.values(S.episodes).find(e=>e.status==='active');
+  if(ep){
+    addBtn(actions,t('advance'),null,()=>doCmd('episode-action',{episodeId:ep.id}));
+    addBtn(actions,t('resolve'),null,()=>doCmd('resolve-episode',{
+      episodeId:ep.id,resultId:'res1',
+      exit:{placeId:'obhod',portId:'obhod.bereg'}}));
+    addBtn(actions,t('retreat'),null,()=>doCmd('retreat-episode',{episodeId:ep.id}));
+    return;
+  }
+
+  if(hero.location==='pere'&&S.places.pere.state.kind==='pereprava'
+     &&!hero.knowledge.includes('pere.path.closed')){
+    addBtn(actions,'🔍 '+t('inspect'),'0',()=>doCmd('inspect-path',{placeId:'pere'}));
+  }
+  if(hero.location==='lager'&&S.entities.materials.owner!=='hero'
+     &&S.entities.materials.location==='lager'){
+    addBtn(actions,'📦 '+t('take'),'1',()=>doCmd('take-cargo',{cargoId:'materials'}));
+  }
+  if(hero.inventory.includes('materials')&&hero.location==='master'){
+    addBtn(actions,'⚒ '+t('give'),'1',()=>doCmd('give-materials',
+      {masterId:'master',materialsId:'materials'}));
+  }
+  if(hero.inventory.includes('tool')&&hero.location==='obhod'){
+    addBtn(actions,'🔧 '+t('tool'),'1',()=>doCmd('use-tool',
+      {toolId:'tool',placeId:'obhod'}));
+  }
+  if(hero.location==='lager'&&!hero.pendingSupport){
+    addBtn(actions,'📣 '+t('ask'),'1',()=>doCmd('ask-carrier',{carrierId:'carrier'}));
+  }
+  if(hero.location==='pere'&&S.places.pere.state.choice==='none'){
+    const ready=S.places.pere.state.path==='open'||S.places.obhod.state.prepared;
+    if(ready){
+      addBtn(actions,'🛡 '+t('fortify'),'1',()=>doCmd('fortify',{placeId:'pere'}));
+      addBtn(actions,'🏃 '+t('mobile'),'1',()=>doCmd('keep-mobile',{placeId:'pere'}));
+    }
+  }
+  if(hero.location==='pere'&&S.places.pere.state.choice!=='none'){
+    addBtn(actions,'🔄 '+t('turn'),'1',()=>doCmd('transform',{}));
+  }
+  if(hero.location==='pere'&&S.places.obhod.state.prepared){
+    const hasEp=Object.values(S.episodes).some(e=>e.status==='active');
+    if(!hasEp){
+      addBtn(actions,'🌀 '+t('enter'),'0',()=>doCmd('enter-episode',
+        {placeId:'pere',mode:'detailed'}));
+    }
+  }
+
+  if(actions.children.length===0){
+    const hint=document.createElement('div');
+    hint.className='hint';
+    hint.textContent='↔ '+t('to')+' '+Object.values(S.places[hero.location].ports)
+      .filter(p=>p.state==='open').map(p=>t(p.to)).join(', ');
+    actions.appendChild(hint);
+  }
+}
+
+document.getElementById('lang').onclick=()=>{
+  LANG=LANG==='ua'?'en':'ua';
+  document.getElementById('lang').textContent=LANG==='ua'?'EN':'UA';
+  document.getElementById('brand').textContent=t('brand');
+  render();
+};
+document.getElementById('reset').onclick=()=>{
+  S=createWorld();LOG=[];render();
+};
+
+document.getElementById('brand').textContent=t('brand');
+render();
+</script>
+</body>
+</html>
