@@ -1,0 +1,25 @@
+{
+  "version": "0.1.0",
+  "endings": [
+    "boat",
+    "wood",
+    "detour",
+    "roots",
+    "shadow"
+  ],
+  "immutableTransitionsChecked": 2129,
+  "pocketRoutes": "PASS",
+  "outerInnerInfluence": "PASS",
+  "threeFoldsRestoreOrder": "PASS",
+  "persistentStateRoundTrip": "PASS",
+  "missedBoatRecoveryOptions": "PASS",
+  "repeatableDice": "PASS",
+  "illegalActionAtomic": "PASS",
+  "seedsExplored": 30,
+  "limitations": [
+    "short authored demo, not the final general engine",
+    "single inner world, not unlimited depth",
+    "no native iOS Safari device test",
+    "game balance requires human playtests"
+  ]
+}
