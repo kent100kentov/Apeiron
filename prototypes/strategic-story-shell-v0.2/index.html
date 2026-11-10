@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#192829">
+<meta name="description" content="Apeiron — Право на шлях. Проба стратегічного сторітелінгу UA/EN.">
+<title>Apeiron · Право на шлях</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <header class="site-head">
+    <div class="brand-block"><div class="brand">A P E I R O N</div><div class="subtitle" id="subhead"></div></div>
+    <div class="head-actions"><button type="button" id="language" class="util">EN</button><button type="button" id="restart" class="util" aria-label="Restart">↺</button></div>
+  </header>
+  <main class="layout">
+    <section class="world" aria-labelledby="worldTitle">
+      <div class="upper"><div><p class="overline" id="worldEyebrow"></p><h1 id="worldTitle"></h1></div><span class="chapter-mark">I / 03</span></div>
+      <p class="world-claim" id="worldClaim"></p>
+      <div class="map" id="map" aria-label="World routes">
+        <svg class="routes" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
+          <defs><pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.1" fill="#a18d62" opacity=".32"/></pattern></defs>
+          <rect width="1000" height="600" fill="url(#dots)"/>
+          <path d="M0 110 Q240 10 410 112 T1000 106 M0 450 Q240 310 480 450 T1000 465 M100 0 Q190 240 80 600 M820 0 Q710 170 910 600" stroke="#756d57" opacity=".16" stroke-width="3" fill="none"/>
+          <path id="route-grain" d="M490 174 Q300 155 210 220"/>
+          <path id="route-water" d="M520 174 Q690 145 793 219"/>
+          <path id="route-depth" d="M500 225 Q440 315 505 419"/>
+          <path id="route-from-depth" d="M490 455 Q350 478 210 258 M510 455 Q650 478 790 260"/>
+        </svg>
+        <div class="map-point city" data-point="city"><span class="sigil">⌂</span><strong id="placeCity"></strong><small id="placeCityNote"></small></div>
+        <div class="map-point terrace" data-point="terrace"><span class="sigil">≋</span><strong id="placeTerrace"></strong><small id="placeTerraceNote"></small></div>
+        <div class="map-point tower" data-point="tower"><span class="sigil">♜</span><strong id="placeTower"></strong><small id="placeTowerNote"></small></div>
+        <div class="map-point depth" data-point="depth"><span class="sigil">◇</span><strong id="placeDepth"></strong><small id="placeDepthNote"></small></div>
+      </div>
+      <p class="map-note" id="mapNote"></p>
+      <div class="world-status"><div><small id="labelRoute"></small><strong id="routeValue"></strong></div><div><small id="labelRights"></small><strong id="rightsValue"></strong></div></div>
+      <details class="chronicle"><summary id="journalLabel"></summary><ol id="journal"></ol></details>
+    </section>
+    <section class="narrative" aria-labelledby="sceneTitle">
+      <div class="story-top"><div><p class="overline" id="chapterLabel"></p><h2 id="sceneTitle"></h2></div><span class="step-chip" id="turn"></span></div>
+      <div class="speaker"><span class="seal">✧</span><div><strong id="speakerName"></strong><small id="speakerRole"></small></div></div>
+      <p id="sceneText" class="scene-text"></p>
+      <div class="aftermath" id="aftermath" role="status" aria-live="polite" hidden></div>
+      <h3 class="action-heading" id="choiceLabel"></h3>
+      <div class="actions" id="actions"></div>
+      <div id="ending" class="ending" hidden><h3 id="endingTitle"></h3><p id="endingText"></p><button id="again" class="option again"></button></div>
+      <p class="footnote" id="footnote"></p>
+    </section>
+  </main>
+  <footer class="footer"><span id="version"></span><span id="saveStatus" role="status"></span></footer>
+</div>
+<script src="engine.js"></script><script src="view.js"></script>
+</body></html>
