@@ -1,0 +1,36 @@
+/* Watercolor lighthouse option v0.1 — visual-only, OFF by default.
+   Companion artwork is supplied in Apeiron_Visual_Patch_v01.zip in the originating chat.
+   Do not ship until the image is copied to ./assets/lighthouse-watercolor.webp. */
+#map-layer{isolation:isolate;background-color:#f5eddc;background-image:linear-gradient(90deg,rgba(245,237,220,.18) 0%,rgba(245,237,220,0) 43%,rgba(245,237,220,.25) 100%),url('./assets/lighthouse-watercolor.webp');background-repeat:no-repeat;background-position:center center,49% 49%;background-size:100% 100%,min(74vw,900px) auto}
+#map-layer::before{content:'APEIRON · АПЕЙРОН\A ОСТАННІЙ ЛІХТАР';white-space:pre-line;position:absolute;top:33px;left:37px;z-index:4;pointer-events:none;font-family:var(--font-display,Georgia,serif);font-size:clamp(12px,1.2vw,16px);line-height:1.9;font-weight:700;letter-spacing:.13em;color:#355f65;text-shadow:0 1px 0 #fff,0 0 9px #fff}
+#map-layer .map-decoration{display:none}
+#map-layer svg.paths{opacity:.48}
+#map-layer svg.paths path{stroke:#346879;stroke-width:.42;stroke-dasharray:1.2 1.8}
+#map-layer .node-wrapper{width:138px;height:63px;z-index:10;-webkit-tap-highlight-color:transparent}
+#map-layer .node-card{transform:rotate(0deg);padding:8px 13px;display:flex;justify-content:center;align-items:center;height:100%;border:1px solid rgba(49,87,88,.55);border-radius:4px;background:rgba(254,252,245,.93);box-shadow:0 6px 17px rgba(32,52,52,.20),inset 0 1px 0 rgba(255,255,255,.8);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);transition:transform .22s,box-shadow .22s,background .22s}
+#map-layer .node-card img,#map-layer .node-card::before{display:none}
+#map-layer .node-card .label{position:static;width:auto;font-family:var(--font-hand,Georgia,serif);font-size:clamp(21px,2vw,27px);line-height:1;font-weight:700;color:#2e5a62;text-align:center}
+#map-layer .node-wrapper.reachable .node-card{border-left:4px solid #2e7186;background:rgba(255,252,243,.97)}
+#map-layer .node-wrapper.reachable:hover .node-card{transform:translateY(-5px) scale(1.06);box-shadow:0 12px 24px rgba(32,52,52,.24)}
+#map-layer .node-wrapper.current .node-card{transform:scale(1.07);border:2px solid #b53d31;background:rgba(255,249,235,.98);box-shadow:0 0 0 4px rgba(181,61,49,.12),0 9px 22px rgba(43,50,48,.28)}
+#map-layer .node-wrapper.current .node-card .label{color:#9e392e}
+#map-layer .node-wrapper.current .node-card::after{content:'◆';position:absolute;top:-15px;right:-7px;font-size:21px;color:#b53d31;filter:drop-shadow(0 1px 1px #fff)}
+#map-layer .node-wrapper:not(.current):not(.reachable) .node-card{opacity:.87}
+#game-board .right-panel{box-shadow:-13px 0 34px rgba(34,44,43,.16),-10px 10px 30px rgba(0,0,0,.2);background-color:rgba(253,251,247,.97)}
+#game-board .paper-card{background:rgba(255,253,246,.97)}
+@media(max-width:1000px){
+ #map-layer{height:min(102vw,500px);min-height:355px;background-position:center center,center center;background-size:100% 100%,cover;border-bottom:1px solid rgba(122,90,58,.2)}
+ #map-layer::before{top:15px;left:18px;font-size:11px;line-height:1.65;letter-spacing:.09em}
+ #map-layer .node-wrapper{width:112px;height:48px}
+ #map-layer .node-card{padding:6px 8px}
+ #map-layer .node-card .label{font-size:21px}
+ #map-layer .node-wrapper:has(img[src*="photo-1473116763249"]){left:24%!important;top:83%!important}
+ #map-layer .node-wrapper:has(img[src*="photo-1510798831971"]){left:74%!important;top:71%!important}
+ #map-layer .node-wrapper:has(img[src*="photo-1506459225024"]){left:27%!important;top:28%!important}
+ #map-layer .node-wrapper:has(img[src*="photo-1518241353330"]){left:76%!important;top:38%!important}
+ #map-layer .node-wrapper:has(img[src*="photo-1500530855697"]){left:75%!important;top:87%!important}
+ #map-layer svg.paths{display:none}
+ #game-board .right-panel{background:#fdfbf7}
+}
+@media(max-width:390px){#map-layer .node-wrapper{width:101px;height:45px}#map-layer .node-card .label{font-size:19px}}
+@media(prefers-reduced-motion:reduce){#map-layer .node-card{transition:none}}
